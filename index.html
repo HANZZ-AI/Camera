@@ -2,602 +2,468 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Kamera Web - Capture & Foto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NexCam - Kamera RGB Merah</title>
     <style>
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            user-select: none; /* Mencegah teks terpilih saat interaksi cepat */
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(145deg, #1e2a3a 0%, #0f1724 100%);
-            margin: 0;
+            background: radial-gradient(circle at 20% 30%, #0a0000, #1a0303);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 16px;
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, 'Inter', sans-serif;
         }
 
-        .camera-container {
-            max-width: 700px;
+        /* wadah utama dengan aksen merah neon */
+        .camera-neon {
+            max-width: 600px;
             width: 100%;
-            background: rgba(0, 0, 0, 0.65);
-            border-radius: 2rem;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
-            overflow: hidden;
+            background: rgba(20, 5, 5, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            border: 1px solid rgba(255, 40, 40, 0.7);
+            box-shadow: 0 20px 40px rgba(255, 0, 0, 0.25), 0 0 18px rgba(255, 30, 30, 0.5);
             padding: 20px 20px 30px;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
 
-        h1 {
-            text-align: center;
-            font-size: 1.7rem;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            color: white;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            letter-spacing: -0.3px;
+        /* header dengan sentuhan merah */
+        .brand {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px dashed #ff4d4d;
+            padding-bottom: 8px;
+        }
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff4d4d, #ff9999);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 8px rgba(255,0,0,0.4);
+            letter-spacing: -0.5px;
+        }
+        .dev-by {
+            background: #ff1a1a30;
+            backdrop-filter: blur(4px);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #ffb3b3;
+            border: 0.5px solid #ff4444;
+        }
+        .dev-by span {
+            color: #ff8080;
         }
 
-        h1:before {
-            content: "📸";
-            font-size: 1.8rem;
-        }
-
-        .sub {
-            text-align: center;
-            color: #cfdee9;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            display: inline-block;
-            width: auto;
-            margin-left: auto;
-            margin-right: auto;
-            padding-bottom: 6px;
-        }
-
-        /* video wrapper dengan rasio 4:3 yang nyaman */
-        .video-wrapper {
-            background: #000;
-            border-radius: 28px;
+        .video-box {
+            background: #000000aa;
+            border-radius: 32px;
             overflow: hidden;
+            margin: 15px 0 18px;
+            border: 2px solid #ff3333;
+            box-shadow: 0 0 0 2px #7a0000, 0 10px 25px rgba(0,0,0,0.5);
             position: relative;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-            margin-bottom: 24px;
-            border: 1px solid rgba(255,255,255,0.3);
         }
-
         video {
             width: 100%;
             height: auto;
             display: block;
-            transform: scaleX(1);
-            /* default tampilan normal, namun bisa mirror jika diinginkan, biarkan asli */
+            transform: scaleX(1); /* tanpa mirror, seperti kamera asli */
+            background: #111;
         }
 
-        /* efek saat mengambil foto */
-        .flash-effect {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 999;
-            transition: opacity 0.08s ease-out;
-        }
-
-        .flash-active {
-            opacity: 0.85;
-        }
-
-        .controls {
+        /* kontrol tombol utama */
+        .action-row {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 18px;
+            margin: 12px 0 20px;
             flex-wrap: wrap;
-            margin-bottom: 25px;
         }
-
-        button {
-            background: #1e2f3f;
+        .btn {
             border: none;
-            font-size: 1.15rem;
-            font-weight: 600;
-            padding: 12px 24px;
+            background: #2c0a0a;
+            padding: 12px 20px;
             border-radius: 60px;
-            color: white;
-            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #ffc2c2;
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             backdrop-filter: blur(4px);
             transition: 0.2s;
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            border: 1px solid #ff4f4f;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
-
-        button i {
-            font-style: normal;
+        .btn-primary {
+            background: #e60000;
+            color: white;
+            box-shadow: 0 0 12px #ff3a3a;
+            border: none;
+        }
+        .btn-primary:active { transform: scale(0.96); background: #cc0000;}
+        .btn:active { transform: scale(0.96);}
+        .btn-outline-red {
+            background: #1f0505;
+            border: 1px solid #ff6666;
+        }
+        .icon {
             font-size: 1.3rem;
         }
 
-        button:active {
-            transform: scale(0.96);
+        /* galeri thumbnail */
+        .mini-gallery {
+            background: rgba(0,0,0,0.6);
+            border-radius: 28px;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px solid #ff4d4d60;
         }
-
-        .btn-capture {
-            background: #e63946;
-            box-shadow: 0 8px 18px rgba(230, 57, 70, 0.4);
-        }
-
-        .btn-capture:hover {
-            background: #c92a3a;
-        }
-
-        .btn-reset {
-            background: #2c3e4e;
-        }
-
-        .btn-reset:hover {
-            background: #1f2f3c;
-        }
-
-        /* galeri hasil foto */
-        .gallery {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 24px;
-            padding: 16px;
-            backdrop-filter: blur(4px);
-        }
-
-        .gallery-title {
+        .mini-header {
             display: flex;
-            align-items: baseline;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 12px;
-            padding: 0 8px;
-            color: #ddd;
-            font-weight: 500;
+            padding: 0 6px;
+            color: #ffbaba;
+            font-weight: 600;
         }
-
-        .photo-list {
+        .thumb-scroll {
             display: flex;
-            flex-wrap: nowrap;
+            gap: 12px;
             overflow-x: auto;
-            gap: 14px;
-            padding-bottom: 12px;
-            scrollbar-width: thin;
+            padding-bottom: 8px;
         }
-
-        .photo-item {
-            position: relative;
-            flex: 0 0 auto;
-            width: 90px;
-            height: 90px;
+        .thumb-item {
+            width: 75px;
+            height: 75px;
+            background: #2b0a0a;
             border-radius: 18px;
             overflow: hidden;
-            border: 2px solid rgba(255,255,240,0.7);
-            background: #1a1f2a;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-            transition: 0.1s;
+            border: 2px solid #ff5e5e;
+            flex-shrink: 0;
+            position: relative;
         }
-
-        .photo-item img {
+        .thumb-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: block;
         }
-
-        .delete-photo {
+        .delete-one {
             position: absolute;
             top: 2px;
             right: 2px;
-            background: rgba(0,0,0,0.7);
+            background: #aa0000dd;
             border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 14px;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             cursor: pointer;
+            color: white;
             font-weight: bold;
-            backdrop-filter: blur(2px);
-            border: none;
-            padding: 0;
-            line-height: 1;
         }
-
-        .delete-photo:hover {
-            background: #e63946;
-        }
-
-        .empty-gallery {
+        .empty-text {
             text-align: center;
-            color: #b9c7d0;
+            color: #ffaaaa;
             padding: 20px;
             font-style: italic;
-            font-size: 0.9rem;
         }
-
-        .status-text {
-            background: #00000099;
+        .status-msg {
+            background: #270000aa;
             border-radius: 40px;
-            padding: 8px 16px;
-            text-align: center;
-            font-size: 0.8rem;
+            padding: 6px 12px;
             margin-top: 15px;
-            color: #d1e2f0;
-            display: inline-block;
-            width: auto;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        footer {
-            font-size: 0.7rem;
             text-align: center;
-            color: #7e95aa;
-            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #ffaaaa;
         }
-
-        @media (max-width: 550px) {
-            .camera-container {
-                padding: 15px;
-            }
-            button {
-                padding: 10px 20px;
-                font-size: 1rem;
-            }
-            .photo-item {
-                width: 70px;
-                height: 70px;
-            }
+        footer {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 18px;
+            color: #cc7a7a;
+        }
+        .btn-sm {
+            background: #4a1212;
+            padding: 6px 12px;
+            font-size: 0.7rem;
+        }
+        .flex-btns {
+            display: flex;
+            gap: 12px;
+        }
+        @media (max-width: 500px) {
+            .camera-neon { padding: 14px; }
+            .btn { padding: 10px 14px; font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
-
-<div class="camera-container">
-    <h1>Kamera Web</h1>
-    <div style="text-align: center;"><span class="sub">📷 Jepret momen & simpan</span></div>
-
-    <div class="video-wrapper">
-        <video id="video" autoplay playsinline muted></video>
+<div class="camera-neon">
+    <div class="brand">
+        <h1>◉ NEXCAM</h1>
+        <div class="dev-by">⚡ Dev by <span>HANZZ</span> ⚡</div>
+    </div>
+    
+    <div class="video-box">
+        <video id="videoElement" autoplay playsinline muted></video>
     </div>
 
-    <div class="controls">
-        <button id="captureBtn" class="btn-capture">
-            <i>📸</i> Ambil Foto
-        </button>
-        <button id="resetBtn" class="btn-reset">
-            <i>🗑️</i> Hapus Semua
-        </button>
+    <div class="action-row">
+        <button id="captureBtn" class="btn btn-primary"><span class="icon">📸</span> JEPRET</button>
+        <button id="switchCamBtn" class="btn btn-outline-red"><span class="icon">🔄</span> Ganti Kamera</button>
+        <button id="galleryRedirectBtn" class="btn btn-outline-red"><span class="icon">🖼️</span> Cek Foto</button>
     </div>
 
-    <div class="gallery">
-        <div class="gallery-title">
-            <span>📸 Foto Tersimpan</span>
-            <span style="font-size: 0.7rem;" id="photoCount">0 foto</span>
+    <!-- preview mini galeri dengan hapus cepat -->
+    <div class="mini-gallery">
+        <div class="mini-header">
+            <span>📸 Foto terbaru</span>
+            <button id="resetMiniBtn" class="btn-sm" style="background:#8b0000; border-radius:30px;">🗑️ Hapus Semua</button>
         </div>
-        <div id="photoListContainer" class="photo-list">
-            <div class="empty-gallery">Belum ada foto. Klik tombol ambil foto!</div>
+        <div id="miniThumbList" class="thumb-scroll">
+            <div class="empty-text">✨ Belum ada foto, ambil dulu yuk!</div>
         </div>
     </div>
-    <div class="status-text" id="cameraStatus">🌐 Menginisialisasi kamera...</div>
-    <footer>⚠️ Pastikan izin kamera diberikan. Hasil foto tersimpan di dalam halaman.</footer>
+    <div class="status-msg" id="camStatus">🔴 Menyalakan kamera RGB ...</div>
+    <footer>mode asli (tanpa mirror) | kamera seperti pandangan nyata</footer>
 </div>
 
-<!-- elemen efek kilat -->
-<div id="flashOverlay" class="flash-effect"></div>
-
 <script>
-    (function() {
-        // DOM elements
-        const video = document.getElementById('video');
+    (function(){
+        // elemen
+        const video = document.getElementById('videoElement');
         const captureBtn = document.getElementById('captureBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const photoListContainer = document.getElementById('photoListContainer');
-        const photoCountSpan = document.getElementById('photoCount');
-        const cameraStatusSpan = document.getElementById('cameraStatus');
-        const flashOverlay = document.getElementById('flashOverlay');
+        const switchCamBtn = document.getElementById('switchCamBtn');
+        const galleryRedirectBtn = document.getElementById('galleryRedirectBtn');
+        const miniThumbDiv = document.getElementById('miniThumbList');
+        const resetMiniBtn = document.getElementById('resetMiniBtn');
+        const camStatusSpan = document.getElementById('camStatus');
 
-        // Array untuk menyimpan data foto (base64)
-        let photosArray = [];
-
-        // Stream aktif kamera
+        // global
         let currentStream = null;
+        let facingMode = "environment";   // default ke kamera belakang (seperti kamera asli) -> bukan mirror, citra nyata
+        let photosArray = [];              // simpan base64
 
-        // Fungsi untuk memuat ulang tampilan galeri
-        function renderGallery() {
-            // kosongkan container
-            photoListContainer.innerHTML = '';
-            
-            if (photosArray.length === 0) {
+        // --- fungsi render thumbnail mini di index.html ---
+        function renderMiniGallery() {
+            miniThumbDiv.innerHTML = '';
+            if(photosArray.length === 0){
                 const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'empty-gallery';
-                emptyDiv.innerText = '📭 Belum ada foto. Klik tombol ambil foto!';
-                photoListContainer.appendChild(emptyDiv);
-                photoCountSpan.innerText = '0 foto';
+                emptyDiv.className = 'empty-text';
+                emptyDiv.innerText = '📭 Belum ada foto, ambil dulu yuk!';
+                miniThumbDiv.appendChild(emptyDiv);
                 return;
             }
-            
-            photoCountSpan.innerText = `${photosArray.length} foto`;
-            
-            // looping foto dari array, ditampilkan dari yang terbaru (index terakhir) di paling kiri? 
-            // tapi untuk pengalaman paling baru lebih mudah di awal agar mudah lihat, kita tampilkan urutan terbaru di paling depan (reverse)
-            // Namun user mungkin suka foto terbaru di kiri, maka kita reverse array saat render? photosArray urutan default capture (push)
-            // Agar foto baru muncul di paling kiri, kita gunakan slice().reverse()
-            const reversedPhotos = [...photosArray].reverse();
-            for (let i = 0; i < reversedPhotos.length; i++) {
-                const photoData = reversedPhotos[i];
-                // index asli dalam photosArray (untuk keperluan hapus)
+            // tampilkan terbaru di depan (reverse)
+            const reversed = [...photosArray].reverse();
+            for(let i=0; i<reversed.length; i++){
+                const imgData = reversed[i];
                 const originalIndex = photosArray.length - 1 - i;
-                
-                const photoDiv = document.createElement('div');
-                photoDiv.className = 'photo-item';
-                
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'thumb-item';
                 const img = document.createElement('img');
-                img.src = photoData;
-                img.alt = `foto ${originalIndex + 1}`;
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerText = '✕';
-                deleteBtn.className = 'delete-photo';
-                deleteBtn.title = 'Hapus foto ini';
-                deleteBtn.addEventListener('click', (e) => {
+                img.src = imgData;
+                const delBtn = document.createElement('div');
+                delBtn.innerText = '✕';
+                delBtn.className = 'delete-one';
+                delBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     deletePhotoByIndex(originalIndex);
                 });
-                
-                photoDiv.appendChild(img);
-                photoDiv.appendChild(deleteBtn);
-                photoListContainer.appendChild(photoDiv);
+                thumbDiv.appendChild(img);
+                thumbDiv.appendChild(delBtn);
+                miniThumbDiv.appendChild(thumbDiv);
             }
         }
-        
-        // Hapus foto berdasarkan index di photosArray
-        function deletePhotoByIndex(index) {
-            if (index >= 0 && index < photosArray.length) {
-                photosArray.splice(index, 1);
-                renderGallery();
-                // opsional simpan ke localStorage jika ingin, tapi biarkan session saja
-                saveToLocalStorage();
+
+        function deletePhotoByIndex(idx){
+            if(idx >=0 && idx < photosArray.length){
+                photosArray.splice(idx,1);
+                saveToLocal();
+                renderMiniGallery();
+                updatePhotoCountInStorage(); // untuk konsistensi di index2 nanti (via localstorage sudah update)
             }
         }
-        
-        // reset semua foto
-        function resetAllPhotos() {
-            if (photosArray.length > 0) {
+
+        function resetAllPhotos(){
+            if(photosArray.length > 0){
                 photosArray = [];
-                renderGallery();
-                saveToLocalStorage();
-                // efek notifikasi singkat
-                cameraStatusSpan.innerText = '✨ Semua foto telah dihapus';
-                setTimeout(() => {
-                    if (currentStream && currentStream.active) {
-                        cameraStatusSpan.innerText = '✅ Kamera aktif, siap jepret';
-                    } else {
-                        cameraStatusSpan.innerText = '🎥 Kamera berjalan, ambil foto ya!';
-                    }
-                }, 1500);
+                saveToLocal();
+                renderMiniGallery();
+                camStatusSpan.innerText = '✅ Semua foto terhapus';
+                setTimeout(()=>{ if(currentStream) camStatusSpan.innerText = '📷 Kamera aktif (belakang)'; },1500);
             } else {
-                cameraStatusSpan.innerText = '📭 Tidak ada foto untuk dihapus';
-                setTimeout(() => {
-                    if (currentStream && currentStream.active) cameraStatusSpan.innerText = '✅ Kamera aktif';
-                }, 1000);
+                camStatusSpan.innerText = '⚠️ Tidak ada foto untuk dihapus';
             }
         }
-        
-        // Simpan ke localStorage agar foto tidak hilang saat refresh (optional)
-        function saveToLocalStorage() {
-            try {
-                localStorage.setItem('webcam_photos', JSON.stringify(photosArray));
-            } catch(e) { console.warn("localStorage penuh?"); }
+
+        function saveToLocal(){
+            localStorage.setItem('nexcam_photos', JSON.stringify(photosArray));
         }
-        
-        function loadFromLocalStorage() {
-            const stored = localStorage.getItem('webcam_photos');
-            if (stored) {
+
+        function loadFromLocal(){
+            const stored = localStorage.getItem('nexcam_photos');
+            if(stored){
                 try {
                     const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed)) {
+                    if(Array.isArray(parsed)){
                         photosArray = parsed;
-                        renderGallery();
+                        renderMiniGallery();
                     }
-                } catch(e) {}
+                } catch(e){}
+            } else {
+                photosArray = [];
+                renderMiniGallery();
             }
         }
-        
-        // Efek kilat singkat saat capture
-        function triggerFlash() {
-            flashOverlay.classList.add('flash-active');
-            setTimeout(() => {
-                flashOverlay.classList.remove('flash-active');
-            }, 120);
-        }
-        
-        // Fungsi capture foto dari video stream
-        function capturePhoto() {
-            if (!video.videoWidth || !video.videoHeight) {
-                cameraStatusSpan.innerText = '⚠️ Video belum siap, tunggu kamera aktif';
-                return;
-            }
-            
-            // Membuat canvas dengan ukuran video asli
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            
-            // Menggambar frame video ke canvas. 
-            // Jika ingin efek mirroring (kamera depan sering terbalik) tapi kita biarkan polos sesuai stream asli
-            // Namun karena biasanya kamera web tidak mirror, tetapi lebih natural tanpa mirror. 
-            // Jika pengguna menginginkan selfie mirror, bisa diaktifkan dengan scale(-1,1). Namun kebanyakan lebih suka tampilan asli.
-            // Tutorial ini biarkan seperti stream asli agar tidak membingungkan.
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Konversi ke dataURL (format PNG)
-            const photoDataUrl = canvas.toDataURL('image/png');
-            
-            // Tambahkan ke array
-            photosArray.push(photoDataUrl);
-            renderGallery();
-            saveToLocalStorage();
-            
-            // Efek visual
-            triggerFlash();
-            cameraStatusSpan.innerText = '📸 Foto berhasil diambil!';
-            setTimeout(() => {
-                if (currentStream && currentStream.active) cameraStatusSpan.innerText = '✅ Kamera siap';
-                else cameraStatusSpan.innerText = '📷 Kamera aktif';
-            }, 1200);
-        }
-        
-        // Melepas stream kamera sebelumnya jika ada
-        function stopCurrentStream() {
-            if (currentStream) {
+
+        // fungsi stop stream
+        function stopStream(){
+            if(currentStream){
                 currentStream.getTracks().forEach(track => {
-                    if (track.readyState === 'live' && track.kind === 'video') {
-                        track.stop();
-                    }
+                    if(track.readyState === 'live') track.stop();
                 });
                 currentStream = null;
             }
         }
-        
-        // Inisialisasi kamera (user media)
-        async function initCamera() {
-            stopCurrentStream();
-            
-            // kondisi default: ingin video dari kamera belakang/depan (lingkungan atau user)
-            // lebih disarankan 'environment' untuk hp, tapi untuk web umum 'user' (selfie) atau 'environment'
-            // Agar lebih universal kita coba dengan menghadap user / lingkungan, user bisa memilih? 
-            // Dapat menggunakan constraint default: video: true (sistem pilih default)
-            // Namun agar menghindari error di beberapa device: wajib menggunakan facingMode: "user" (selfie) atau "environment"
-            // Biarkan sistem memilih default kamera (biasanya kamera depan laptop atau kamera utama hp)
-            // Namun jika ingin user bisa menggunakan switch? Sederhana saja, gunakan video true tanpa facingMode spesifik
-            // lebih stabil di lintas platform
+
+        // inisialisasi kamera dengan facingMode tertentu (environment / user)
+        async function initCamera(facing) {
+            stopStream();
             const constraints = {
                 video: {
+                    facingMode: { exact: facing } ,
                     width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: "user"   // prioritas kamera depan (selfie) karena sering dipakai webcam. Untuk hp, bisa diganti "environment"
-                    // Tapi biar fleksibel di PC/laptop, 'user' lebih umum. Bisa diubah jika butuh kamera belakang. 
-                    // Kita beri info bisa ganti? Sementara user. pengguna bisa ubah sendiri jika perlu.
+                    height: { ideal: 720 }
                 }
             };
-            
-            // Fallback jika facingMode gagal, coba tanpa facingMode
             try {
-                cameraStatusSpan.innerText = '🔄 Meminta akses kamera...';
+                camStatusSpan.innerText = `🔄 Mengakses kamera ${facing === 'environment' ? 'belakang' : 'depan'} ...`;
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 handleStream(stream);
-            } catch (err) {
-                console.warn("facingMode user error, mencoba default video:", err);
-                try {
-                    // Coba tanpa constraint khusus (default kamera sistem)
-                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                return true;
+            } catch(err){
+                console.warn(`gagal dengan facingMode ${facing}, coba non-exact`, err);
+                // fallback tanpa exact, tetap dengan facingMode preferensi
+                try{
+                    const fallbackConstraints = { video: { facingMode: facing } };
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
                     handleStream(fallbackStream);
-                } catch (fallbackErr) {
-                    console.error("Gagal akses kamera:", fallbackErr);
-                    cameraStatusSpan.innerText = '❌ Akses kamera ditolak atau tidak tersedia. Periksa izin.';
-                    showCameraError();
+                    return true;
+                } catch(err2){
+                    console.error("gagal total kamera :", err2);
+                    camStatusSpan.innerText = '❌ Gagal akses kamera / izin ditolak';
+                    return false;
                 }
             }
         }
-        
-        function handleStream(stream) {
+
+        function handleStream(stream){
             currentStream = stream;
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
-                cameraStatusSpan.innerText = '✅ Kamera siap digunakan. Ambil foto!';
+                const modeText = facingMode === 'environment' ? 'KAMERA BELAKANG (asli)' : 'KAMERA DEPAN (asli)';
+                camStatusSpan.innerText = `✅ ${modeText} aktif · tanpa mirror`;
             };
-            video.onerror = () => {
-                cameraStatusSpan.innerText = '⚠️ Error video stream';
-            };
+            video.onerror = () => camStatusSpan.innerText = '⚠️ Error video';
         }
-        
-        function showCameraError() {
-            // tampilkan placeholder atau pesan error di video wrapper
-            video.poster = '';
-            // kosongkan video stream
-            if (video.srcObject) {
-                video.srcObject = null;
+
+        // ganti kamera depan / belakang dengan non-mirror : kita akan toggle antara environment dan user
+        async function switchCamera(){
+            const newMode = (facingMode === 'environment') ? 'user' : 'environment';
+            const success = await initCamera(newMode);
+            if(success){
+                facingMode = newMode;
+                camStatusSpan.innerText = `🔄 Beralih ke ${facingMode === 'environment' ? 'kamera BELAKANG' : 'kamera DEPAN'} (real mirrorless)`;
+            } else {
+                camStatusSpan.innerText = '⚠️ Gagal ganti kamera, pastikan izin & multi kamera tersedia';
             }
-            // Tambahkan teks di video wrapper?
-            const wrapper = document.querySelector('.video-wrapper');
-            // Bisa tidak mengganggu, cukup status teks saja
         }
-        
-        // Event listeners
+
+        // mengambil foto (tanpa mirror, hasil sesuai video)
+        function capturePhoto(){
+            if(!video.videoWidth || !video.videoHeight){
+                camStatusSpan.innerText = '⏳ Tunggu kamera siap...';
+                return;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            // menggambar persis dari video (tidak ada flip, sehingga hasil seperti kamera asli)
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const photoURL = canvas.toDataURL('image/png');
+            photosArray.push(photoURL);
+            saveToLocal();
+            renderMiniGallery();
+            // efek kilat semu (flash merah)
+            const flashDiv = document.createElement('div');
+            flashDiv.style.position = 'fixed'; flashDiv.style.top=0; flashDiv.style.left=0; flashDiv.style.width='100%'; flashDiv.style.height='100%';
+            flashDiv.style.background = 'rgba(255,50,50,0.7)'; flashDiv.style.pointerEvents = 'none'; flashDiv.style.zIndex = 9999;
+            document.body.appendChild(flashDiv);
+            setTimeout(()=> flashDiv.remove(), 100);
+            camStatusSpan.innerText = '📸 Foto tersimpan! (galeri terbaru)';
+            setTimeout(()=> {
+                if(currentStream) camStatusSpan.innerText = `✅ Kamera ${facingMode === 'environment' ? 'belakang' : 'depan'} siap`;
+            },1200);
+        }
+
+        // Tombol cek foto -> redirect ke index2.html
+        function goToGallery(){
+            // pastikan data tersimpan sebelum pindah
+            saveToLocal();
+            window.location.href = 'index2.html';
+        }
+
+        // event binding & load
         captureBtn.addEventListener('click', capturePhoto);
-        resetBtn.addEventListener('click', resetAllPhotos);
-        
-        // Hapus semua foto dan localStorage
-        function fullReset() {
-            resetAllPhotos();
-        }
-        
-        // bersihkan stream ketika halaman ditutup (optional)
-        window.addEventListener('beforeunload', () => {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-        });
-        
-        // load dari localstorage dulu
-        loadFromLocalStorage();
-        
-        // cek dukungan mediaDevices
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            cameraStatusSpan.innerText = '❌ Browser tidak mendukung akses kamera. Gunakan Chrome/Edge/Safari modern.';
-            document.querySelector('.video-wrapper').style.background = '#2a2a2a';
-            const noCamMsg = document.createElement('div');
-            noCamMsg.style.color = '#ccc';
-            noCamMsg.style.padding = '2rem';
-            noCamMsg.style.textAlign = 'center';
-            noCamMsg.innerText = '🚫 Kamera tidak didukung oleh browser ini.';
-            document.querySelector('.video-wrapper').appendChild(noCamMsg);
+        switchCamBtn.addEventListener('click', switchCamera);
+        galleryRedirectBtn.addEventListener('click', goToGallery);
+        resetMiniBtn.addEventListener('click', resetAllPhotos);
+
+        // load data awal dari localStorage
+        loadFromLocal();
+
+        // cek dukungan kamera
+        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+            camStatusSpan.innerText = '❌ Browser tidak support kamera.';
+            document.querySelector('.video-box').style.background = '#220000';
         } else {
-            initCamera().catch(e => {
-                cameraStatusSpan.innerText = '⚠️ Gagal inisialisasi kamera: ' + (e.message || 'unknown');
-                console.error(e);
+            // default pakai kamera belakang (environment) -> tidak mirror seperti kamera asli
+            initCamera('environment').catch(()=>{
+                camStatusSpan.innerText = '⚠️ Gagal buka kamera belakang, coba depan';
+                initCamera('user').catch(()=>{
+                    camStatusSpan.innerText = '❌ Akses kamera ditolak';
+                });
             });
         }
-        
-        // Tombol untuk kasus jika ingin mengulang kamera (optional kita tambah hidden refresh? bisa dengan tombol tidak resmi)
-        // Supaya lebih robust, saat terjadi perubahan tab atau fokus ulang, cek jika stream mati? 
-        // Optimal: tambahkan event listener visibility change untuk memeriksa stream jika perlu 
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                // saat kembali ke tab, cek apakah video masih memiliki stream aktif
-                if ((!currentStream || currentStream.getVideoTracks().length === 0 || !currentStream.active) && navigator.mediaDevices) {
-                    // coba reinit kamera jika stream mati
-                    initCamera().catch(e => console.warn("reinit gagal"));
-                } else if (currentStream && video && video.paused) {
-                    video.play().catch(e=>console.log);
-                }
+
+        // saat keluar halaman, bersihkan stream sedikit lebih rapi
+        window.addEventListener('beforeunload', ()=>{
+            if(currentStream){
+                currentStream.getTracks().forEach(t=>t.stop());
             }
         });
-        
-        // Tambahan: jika video gagal autoplay, coba
-        video.addEventListener('play', () => {});
     })();
 </script>
 </body>
