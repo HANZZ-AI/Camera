@@ -81,7 +81,8 @@
             width: 100%;
             height: auto;
             display: block;
-            transform: scaleX(1); /* tanpa mirror, seperti kamera asli */
+            /* HAPUS mirror effect - kamera asli tanpa flip */
+            transform: scaleX(1);
             background: #111;
         }
 
@@ -205,6 +206,10 @@
             background: #4a1212;
             padding: 6px 12px;
             font-size: 0.7rem;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
         }
         .flex-btns {
             display: flex;
@@ -237,14 +242,14 @@
     <div class="mini-gallery">
         <div class="mini-header">
             <span>📸 Foto terbaru</span>
-            <button id="resetMiniBtn" class="btn-sm" style="background:#8b0000; border-radius:30px;">🗑️ Hapus Semua</button>
+            <button id="resetMiniBtn" class="btn-sm" style="background:#8b0000;">🗑️ Hapus Semua</button>
         </div>
         <div id="miniThumbList" class="thumb-scroll">
             <div class="empty-text">✨ Belum ada foto, ambil dulu yuk!</div>
         </div>
     </div>
     <div class="status-msg" id="camStatus">🔴 Menyalakan kamera RGB ...</div>
-    <footer>mode asli (tanpa mirror) | kamera seperti pandangan nyata</footer>
+    <footer>mode asli (tanpa mirror/cermin) | kamera seperti pandangan nyata</footer>
 </div>
 
 <script>
@@ -260,7 +265,7 @@
 
         // global
         let currentStream = null;
-        let facingMode = "environment";   // default ke kamera belakang (seperti kamera asli) -> bukan mirror, citra nyata
+        let facingMode = "environment";   // default ke kamera belakang (seperti kamera asli)
         let photosArray = [];              // simpan base64
 
         // --- fungsi render thumbnail mini di index.html ---
@@ -300,7 +305,6 @@
                 photosArray.splice(idx,1);
                 saveToLocal();
                 renderMiniGallery();
-                updatePhotoCountInStorage(); // untuk konsistensi di index2 nanti (via localstorage sudah update)
             }
         }
 
@@ -347,6 +351,7 @@
         }
 
         // inisialisasi kamera dengan facingMode tertentu (environment / user)
+        // TAMBAHKAN: memastikan tidak ada mirror effect sama sekali (tidak ada transformasi CSS)
         async function initCamera(facing) {
             stopStream();
             const constraints = {
@@ -360,6 +365,8 @@
                 camStatusSpan.innerText = `🔄 Mengakses kamera ${facing === 'environment' ? 'belakang' : 'depan'} ...`;
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 handleStream(stream);
+                // Pastikan video tidak mirror via CSS (tambahan safety)
+                video.style.transform = 'scaleX(1)';
                 return true;
             } catch(err){
                 console.warn(`gagal dengan facingMode ${facing}, coba non-exact`, err);
@@ -368,6 +375,7 @@
                     const fallbackConstraints = { video: { facingMode: facing } };
                     const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
                     handleStream(fallbackStream);
+                    video.style.transform = 'scaleX(1)';
                     return true;
                 } catch(err2){
                     console.error("gagal total kamera :", err2);
@@ -382,25 +390,26 @@
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
-                const modeText = facingMode === 'environment' ? 'KAMERA BELAKANG (asli)' : 'KAMERA DEPAN (asli)';
-                camStatusSpan.innerText = `✅ ${modeText} aktif · tanpa mirror`;
+                const modeText = facingMode === 'environment' ? 'KAMERA BELAKANG (asli)' : 'KAMERA DEPAN (asli tanpa mirror)';
+                camStatusSpan.innerText = `✅ ${modeText} · tidak mirror`;
             };
             video.onerror = () => camStatusSpan.innerText = '⚠️ Error video';
         }
 
-        // ganti kamera depan / belakang dengan non-mirror : kita akan toggle antara environment dan user
+        // ganti kamera depan / belakang dengan non-mirror : toggle antara environment dan user
         async function switchCamera(){
             const newMode = (facingMode === 'environment') ? 'user' : 'environment';
             const success = await initCamera(newMode);
             if(success){
                 facingMode = newMode;
-                camStatusSpan.innerText = `🔄 Beralih ke ${facingMode === 'environment' ? 'kamera BELAKANG' : 'kamera DEPAN'} (real mirrorless)`;
+                camStatusSpan.innerText = `🔄 Beralih ke ${facingMode === 'environment' ? 'kamera BELAKANG' : 'kamera DEPAN'} (real tanpa mirror)`;
             } else {
                 camStatusSpan.innerText = '⚠️ Gagal ganti kamera, pastikan izin & multi kamera tersedia';
             }
         }
 
-        // mengambil foto (tanpa mirror, hasil sesuai video)
+        // mengambil foto (tanpa mirror, hasil sesuai video asli)
+        // PASTIKAN tidak ada efek mirror di canvas
         function capturePhoto(){
             if(!video.videoWidth || !video.videoHeight){
                 camStatusSpan.innerText = '⏳ Tunggu kamera siap...';
@@ -430,7 +439,6 @@
 
         // Tombol cek foto -> redirect ke index2.html
         function goToGallery(){
-            // pastikan data tersimpan sebelum pindah
             saveToLocal();
             window.location.href = 'index2.html';
         }
@@ -458,7 +466,7 @@
             });
         }
 
-        // saat keluar halaman, bersihkan stream sedikit lebih rapi
+        // saat keluar halaman, bersihkan stream
         window.addEventListener('beforeunload', ()=>{
             if(currentStream){
                 currentStream.getTracks().forEach(t=>t.stop());

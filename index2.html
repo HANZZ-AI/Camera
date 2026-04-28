@@ -183,19 +183,23 @@
     <div class="back-home">
         <a href="index.html" class="btn-back">◀ Kembali ke Kamera NEXCAM</a>
     </div>
-    <div style="text-align: center; margin-top: 20px; font-size: 0.7rem; color:#ff9494;">Klik tombol hapus / download per foto | semua foto tersimpan di browser</div>
+    <div style="text-align: center; margin-top: 20px; font-size: 0.7rem; color:#ff9494;">Klik hapus / download per foto | semua foto tersimpan di browser</div>
 </div>
 
 <script>
     (function(){
         let photoArray = [];
 
-        // elemen
         const galleryDiv = document.getElementById('galleryGrid');
         const deleteAllBtn = document.getElementById('deleteAllBtn');
         const downloadAllBtn = document.getElementById('downloadAllBtn');
 
-        // load dari localStorage
+        // Fungsi untuk menghasilkan nama file sesuai permintaan: hasilfotobyhanzz1.png, hasilfotobyhanzz2.png ...
+        function generateFileName(index) {
+            // index dimulai dari 1 untuk pengguna
+            return `hasilfotobyhanzz${index}.png`;
+        }
+
         function loadPhotos(){
             const stored = localStorage.getItem('nexcam_photos');
             if(stored){
@@ -213,13 +217,10 @@
             renderGallery();
         }
 
-        // simpan array ke localStorage
         function persist(){
             localStorage.setItem('nexcam_photos', JSON.stringify(photoArray));
-            // trigger event storage opsional, dan update dari tab lain
         }
 
-        // hapus satu foto berdasarkan index
         function deletePhoto(index){
             if(index >=0 && index < photoArray.length){
                 photoArray.splice(index,1);
@@ -237,25 +238,24 @@
             }
         }
 
-        // download foto individual
-        function downloadSingle(imgData, filename = `nexcam_${Date.now()}.png`){
+        // download satu foto dengan nama "hasilfotobyhanzz[nomor].png"
+        function downloadSingle(imgData, customFileName) {
             const link = document.createElement('a');
             link.href = imgData;
-            link.download = filename;
+            link.download = customFileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // download semua foto sebagai ZIP (menggunakan JSZip)
+        // download semua foto sebagai ZIP dengan penamaan hasilfotobyhanzz1.png dll
         async function downloadAllAsZip(){
             if(photoArray.length === 0){
                 alert('Tidak ada foto untuk diunduh.');
                 return;
             }
-            // pastikan JSZip tersedia, jika tidak load dari CDN
+            // pastikan JSZip tersedia
             if(typeof JSZip === 'undefined'){
-                // dynamically load jszip
                 const script = document.createElement('script');
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
                 script.onload = () => {
@@ -270,23 +270,24 @@
         async function createAndDownloadZip(){
             const JSZipLib = window.JSZip;
             const zip = new JSZipLib();
-            for(let i=0; i<photoArray.length; i++){
+            for(let i = 0; i < photoArray.length; i++){
                 const base64Data = photoArray[i];
-                // base64 format data:image/png;base64,xxxx
                 const byteString = atob(base64Data.split(',')[1]);
                 const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
                 const ab = new ArrayBuffer(byteString.length);
                 const ia = new Uint8Array(ab);
-                for(let j=0; j<byteString.length; j++){
+                for(let j = 0; j < byteString.length; j++){
                     ia[j] = byteString.charCodeAt(j);
                 }
                 const blob = new Blob([ab], {type: mimeString});
-                zip.file(`foto_nexcam_${i+1}.png`, blob);
+                // penamaan: hasilfotobyhanzz1.png, hasilfotobyhanzz2.png, sesuai urutan array (index mulai 1)
+                const fileName = generateFileName(i + 1);
+                zip.file(fileName, blob);
             }
             const content = await zip.generateAsync({type: "blob"});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(content);
-            link.download = `nexcam_galeri_${Date.now()}.zip`;
+            link.download = `hasilfotobyhanzz_semua.zip`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -318,16 +319,19 @@
                 const downloadBtn = document.createElement('button');
                 downloadBtn.innerText = '⬇️ Download';
                 downloadBtn.className = 'download-single';
-                // index asli dalam array (kita loop dari akhir, tetapi perlu index asli)
+                // index asli dalam array
                 const originalIndex = i; 
+                // Nomor urut untuk penamaan (berdasarkan posisi di array, human-friendly: urutan ke berapa)
+                // Untuk download per foto, gunakan nomor urut asli + 1 (agar dimulai dari 1)
+                const photoNumber = originalIndex + 1;
                 delBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     deletePhoto(originalIndex);
                 });
                 downloadBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const namaFile = `nexcam_${Date.now()}_${originalIndex}.png`;
-                    downloadSingle(imgData, namaFile);
+                    const fileName = generateFileName(photoNumber);
+                    downloadSingle(imgData, fileName);
                 });
                 actionsDiv.appendChild(delBtn);
                 actionsDiv.appendChild(downloadBtn);
@@ -337,18 +341,16 @@
             }
         }
 
-        // hapus semua dengan konfirmasi
         deleteAllBtn.addEventListener('click', deleteAll);
         downloadAllBtn.addEventListener('click', downloadAllAsZip);
 
-        // load awal & juga tangkap perubahan storage dari index.html
         loadPhotos();
         window.addEventListener('storage', (e) => {
             if(e.key === 'nexcam_photos'){
                 loadPhotos();
             }
         });
-        // jika halaman ini terbuka setelah index melakukan perubahan, fetch ulang
+        // sinkronisasi antar tab
         setInterval(() => {
             const fresh = localStorage.getItem('nexcam_photos');
             if(fresh){
@@ -363,6 +365,5 @@
         }, 800);
     })();
 </script>
-<!-- jszip akan dimuat saat diperlukan -->
 </body>
 </html>
